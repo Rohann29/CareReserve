@@ -1,0 +1,15 @@
+-- Create Booking Staff Assignment Table (Many-to-Many)
+CREATE TABLE BOOKING_STAFF_ASSIGNMENT (
+    Booking_ID INT REFERENCES SURGERY_BOOKING(Booking_ID) ON DELETE CASCADE,
+    Staff_ID INT REFERENCES STAFF(Staff_ID) ON DELETE CASCADE,
+    Assigned_Role VARCHAR(100) NOT NULL,
+    PRIMARY KEY (Booking_ID, Staff_ID)
+);
+
+-- Create Booking Asset Allocation Table (Many-to-Many)
+CREATE TABLE BOOKING_ASSET_ALLOCATION (
+    Booking_ID INT REFERENCES SURGERY_BOOKING(Booking_ID) ON DELETE CASCADE,
+    Asset_ID INT REFERENCES SURGICAL_ASSET(Asset_ID) ON DELETE CASCADE,
+    Allocation_Start TIMESTAMP NOT NULL,
+    PRIMARY KEY (Booking_ID, Asset_ID)
+);
