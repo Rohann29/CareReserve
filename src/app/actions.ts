@@ -40,7 +40,7 @@ export async function triggerEmergency(formData: FormData) {
     p_conflict_booking_id: Number(conflictBookingId),
     p_new_patient_id: Number(patientId),
     p_target_ot_id: Number(targetOtId),
-    p_scheduled_start: scheduledStart as string,
+    p_scheduled_start: new Date(scheduledStart as string).toISOString(),
     p_staff_ids: [1, 2], // Hardcoded default staff arrays for the DBMS demo
     p_asset_ids: [1]     // Hardcoded default asset arrays for the DBMS demo
   });
