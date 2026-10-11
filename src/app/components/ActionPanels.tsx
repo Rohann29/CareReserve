@@ -71,12 +71,29 @@ export default function ActionPanels() {
         </div>
         <form ref={emergencyFormRef} onSubmit={handleEmergency} className="p-6 space-y-4">
           <p className="text-sm text-red-700 mb-4">
-            Warning: Executing this action will instantly bump an existing elective booking to 'Rescheduled' status to free up the target OT.
+            Warning: Executing this action will instantly bump an existing elective booking to {"'Rescheduled'"} status to free up the target OT.
           </p>
+          
           <div>
-            <label className="block text-sm font-medium text-red-800 mb-1">Target OT ID for Emergency</label>
+            <label className="block text-sm font-medium text-red-800 mb-1">Target OT ID</label>
             <input type="number" name="targetOtId" placeholder="e.g. 3" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
           </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-red-800 mb-1">Old Surgery to Bump (Conflict ID)</label>
+            <input type="number" name="conflictBookingId" placeholder="e.g. 502" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-red-800 mb-1">Emergency Patient ID</label>
+            <input type="number" name="patientId" placeholder="e.g. 911" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-red-800 mb-1">Emergency Scheduled Start</label>
+            <input type="datetime-local" name="scheduledStart" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+          </div>
+
           <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors mt-4">
             Initiate Override Cascade
           </button>
