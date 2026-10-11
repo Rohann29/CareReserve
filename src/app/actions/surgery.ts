@@ -17,12 +17,13 @@ export async function handleSurgeryBooking(data: SurgeryBookingData) {
     const supabase = await createClient();
     const { error } = await supabase.rpc('book_surgery', {
       p_patient_id: data.Patient_ID,
-      p_ot_id: data.OT_ID,
-      p_start: data.Scheduled_Start instanceof Date
-        ? data.Scheduled_Start.toISOString()
-        : data.Scheduled_Start,
-      p_staff_ids: data.Staff_IDs,
-      p_asset_ids: data.Asset_IDs,
+  p_ot_id: data.OT_ID,
+  p_start: data.Scheduled_Start instanceof Date
+    ? data.Scheduled_Start.toISOString()
+    : data.Scheduled_Start,
+  p_staff_ids: data.Staff_IDs,
+  p_asset_ids: data.Asset_IDs,
+  p_conflict_booking_id: data.Conflict_Booking_ID
     });
 
     if (error) {
