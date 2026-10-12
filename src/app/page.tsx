@@ -15,7 +15,7 @@ export default async function Dashboard() {
     .select('*')
     .in('booking_status', ['Scheduled', 'Emergency'])
     .order('scheduled_start', { ascending: true })
-    .limit(6);
+    
 
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-[1400px] mx-auto bg-stone-200/50 font-sans text-stone-800">
