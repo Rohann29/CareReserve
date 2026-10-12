@@ -5,13 +5,11 @@ import ActionPanels from './components/ActionPanels';
 export const revalidate = 0; 
 
 export default async function Dashboard() {
-  // 1. Fetch Hospital Branches (Assuming these were already lowercase since they worked)
   const { data: branches, error: branchError } = await supabase
     .from('hospital_branch')
     .select('*')
     .order('branch_id', { ascending: true });
 
-  // 2. Fetch Active Reserved OTs with strictly lowercase column names
   const { data: reservedOts, error: otError } = await supabase
     .from('surgery_booking')
     .select('*')
@@ -20,45 +18,51 @@ export default async function Dashboard() {
     .limit(6);
 
   return (
-    <main className="min-h-screen p-8 max-w-7xl mx-auto bg-stone-50 font-sans text-stone-800">
+    <main className="min-h-screen p-4 md:p-6 max-w-[1400px] mx-auto bg-stone-200/50 font-sans text-stone-800">
       <Toaster position="top-right" />
       
-      <header className="mb-8 border-b border-stone-200 pb-4">
-        <h1 className="text-3xl font-bold tracking-tight text-stone-800">CareReserve Admin Dashboard</h1>
-        <p className="text-stone-500 font-medium mt-1">Live Resource Allocation Engine</p>
-      </header>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Bento Grid Wrapper */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Side: Hospital Branches Overview */}
-        <section className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
-          <div className="px-6 py-5 border-b border-stone-100 bg-white/50">
-            <h2 className="font-semibold text-stone-800 text-lg">Hospital Branches Overview</h2>
+        {/* 1. Header Compartment */}
+        <header className="lg:col-span-3 bg-teal-900 text-white rounded-[2rem] p-8 md:p-10 shadow-sm flex flex-col justify-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">CareReserve Dashboard</h1>
+            <p className="text-teal-100/80 font-medium text-lg">Live Resource Allocation Engine</p>
+          </div>
+          {/* Subtle aesthetic background shape */}
+          <div className="absolute -right-10 -top-20 w-80 h-80 bg-teal-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+        </header>
+
+        {/* 2. Branches Compartment */}
+        <section className="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden flex flex-col">
+          <div className="px-8 py-6 border-b border-stone-50">
+            <h2 className="font-bold text-stone-800 text-xl">Hospital Branches</h2>
           </div>
           
           {branchError ? (
-            <div className="p-6 text-rose-600 bg-rose-50">
-              Failed to connect to database: {branchError.message}
+            <div className="p-8 text-rose-600 bg-rose-50 flex-1">
+              Error: {branchError.message}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto flex-1 p-2">
               <table className="w-full text-left text-sm text-stone-600">
-                <thead className="bg-stone-50/80 text-stone-500 uppercase tracking-wider text-xs">
+                <thead className="text-stone-400 uppercase tracking-wider text-xs">
                   <tr>
                     <th className="px-6 py-4 font-medium">Branch ID</th>
                     <th className="px-6 py-4 font-medium">Name</th>
                     <th className="px-6 py-4 font-medium">City</th>
-                    <th className="px-6 py-4 font-medium">Emergency Capacity</th>
+                    <th className="px-6 py-4 font-medium">Capacity</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-50">
                   {branches?.map((branch) => (
                     <tr key={branch.branch_id} className="hover:bg-stone-50/50 transition-colors">
-                      <td className="px-6 py-4 font-semibold text-teal-700">#{branch.branch_id}</td>
-                      <td className="px-6 py-4 font-medium text-stone-800">{branch.branch_name}</td>
-                      <td className="px-6 py-4">{branch.location_city}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full font-medium bg-teal-50 text-teal-700 text-xs border border-teal-100">
+                      <td className="px-6 py-5 font-bold text-teal-700">#{branch.branch_id}</td>
+                      <td className="px-6 py-5 font-semibold text-stone-800">{branch.branch_name}</td>
+                      <td className="px-6 py-5">{branch.location_city}</td>
+                      <td className="px-6 py-5">
+                        <span className="inline-flex items-center px-3 py-1 rounded-xl font-bold bg-teal-50 text-teal-700 text-xs">
                           {branch.emergency_capacity} beds
                         </span>
                       </td>
@@ -70,18 +74,18 @@ export default async function Dashboard() {
           )}
         </section>
 
-        {/* Right Side: Live Reserved OTs Feed */}
-        <section className="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden flex flex-col">
-          <div className="px-6 py-5 border-b border-stone-100 bg-gradient-to-r from-stone-50 to-white">
-            <h2 className="font-semibold text-stone-800 text-lg flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              Live Reserved OTs
+        {/* 3. Live OTs Compartment */}
+        <section className="lg:col-span-1 bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden flex flex-col">
+          <div className="px-8 py-6 border-b border-stone-50 bg-gradient-to-br from-stone-50/50 to-white">
+            <h2 className="font-bold text-stone-800 text-xl flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
+              Active OTs
             </h2>
           </div>
           
-          <div className="p-4 flex-1 overflow-y-auto">
+          <div className="p-6 flex-1 overflow-y-auto bg-stone-50/30">
             {otError ? (
-              <div className="text-sm text-rose-600 p-3 bg-rose-50 rounded-lg border border-rose-100 text-center font-medium">
+              <div className="text-sm text-rose-600 p-4 bg-rose-50 rounded-2xl border border-rose-100 font-medium">
                 Error: {otError.message}
               </div>
             ) : !reservedOts || reservedOts.length === 0 ? (
@@ -89,21 +93,20 @@ export default async function Dashboard() {
                 No active reservations.
               </div>
             ) : (
-              <ul className="space-y-3">
-                {/* Updated TypeScript definition to map to lowercase column names */}
+              <ul className="space-y-4">
                 {reservedOts.map((ot: { booking_id: number, ot_id: number, booking_status: string, patient_id: number, scheduled_start: string }) => (
-                  <li key={ot.booking_id} className="p-4 rounded-xl border border-stone-100 bg-stone-50/50 hover:border-teal-200 transition-colors">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-bold text-stone-800 text-sm">OT #{ot.ot_id}</span>
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
+                  <li key={ot.booking_id} className="p-5 rounded-2xl border border-stone-100 bg-white shadow-sm hover:border-teal-200 transition-colors">
+                    <div className="flex justify-between items-start mb-3">
+                      <span className="font-bold text-stone-800">OT #{ot.ot_id}</span>
+                      <span className={`text-[10px] uppercase font-black tracking-wider px-2.5 py-1 rounded-lg ${
                         ot.booking_status === 'Emergency' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                       }`}>
                         {ot.booking_status}
                       </span>
                     </div>
-                    <div className="text-xs text-stone-500 flex justify-between items-center mt-1">
-                      <span>Patient #{ot.patient_id}</span>
-                      <span className="font-medium bg-white px-2 py-1 rounded border border-stone-200">
+                    <div className="text-xs text-stone-500 flex justify-between items-center">
+                      <span className="font-medium bg-stone-100 px-2.5 py-1.5 rounded-lg">Pt. #{ot.patient_id}</span>
+                      <span className="font-semibold text-stone-600">
                         {new Date(ot.scheduled_start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
                     </div>
