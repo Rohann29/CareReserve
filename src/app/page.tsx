@@ -28,7 +28,6 @@ export default async function Dashboard() {
         <p className="text-stone-500 font-medium mt-1">Live Resource Allocation Engine</p>
       </header>
 
-      {/* CSS Grid: 2 columns for branches, 1 column for active OTs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Left Side: Hospital Branches Overview */}
@@ -82,7 +81,9 @@ export default async function Dashboard() {
           
           <div className="p-4 flex-1 overflow-y-auto">
             {otError ? (
-              <div className="text-sm text-rose-500 p-2 text-center">Awaiting database connection...</div>
+              <div className="text-sm text-rose-600 p-3 bg-rose-50 rounded-lg border border-rose-100 text-center font-medium">
+                Error: {otError.message}
+              </div>
             ) : !reservedOts || reservedOts.length === 0 ? (
               <div className="h-full flex items-center justify-center text-stone-400 text-sm py-12">
                 No active reservations.
