@@ -104,7 +104,7 @@ export default async function Dashboard() {
                     <div className="text-xs text-stone-500 flex justify-between items-center">
                       <span className="font-medium bg-stone-100 px-2.5 py-1.5 rounded-lg">Pt. #{ot.patient_id}</span>
                       <span className="font-semibold text-stone-600">
-                        {new Date(ot.scheduled_start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(ot.scheduled_start).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit' })}
                       </span>
                     </div>
                   </li>
