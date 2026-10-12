@@ -5,18 +5,18 @@ import ActionPanels from './components/ActionPanels';
 export const revalidate = 0; 
 
 export default async function Dashboard() {
-  // 1. Fetch Hospital Branches
+  // 1. Fetch Hospital Branches (Assuming these were already lowercase since they worked)
   const { data: branches, error: branchError } = await supabase
     .from('hospital_branch')
     .select('*')
     .order('branch_id', { ascending: true });
 
-  // 2. Fetch Active Reserved OTs from Rohan's surgery_booking table
+  // 2. Fetch Active Reserved OTs with strictly lowercase column names
   const { data: reservedOts, error: otError } = await supabase
     .from('surgery_booking')
     .select('*')
-    .in('Booking_Status', ['Scheduled', 'Emergency'])
-    .order('Scheduled_Start', { ascending: true })
+    .in('booking_status', ['Scheduled', 'Emergency'])
+    .order('scheduled_start', { ascending: true })
     .limit(6);
 
   return (
@@ -90,20 +90,21 @@ export default async function Dashboard() {
               </div>
             ) : (
               <ul className="space-y-3">
-                {reservedOts.map((ot: { Booking_ID: number, OT_ID: number, Booking_Status: string, Patient_ID: number, Scheduled_Start: string }) => (
-                  <li key={ot.Booking_ID} className="p-4 rounded-xl border border-stone-100 bg-stone-50/50 hover:border-teal-200 transition-colors">
+                {/* Updated TypeScript definition to map to lowercase column names */}
+                {reservedOts.map((ot: { booking_id: number, ot_id: number, booking_status: string, patient_id: number, scheduled_start: string }) => (
+                  <li key={ot.booking_id} className="p-4 rounded-xl border border-stone-100 bg-stone-50/50 hover:border-teal-200 transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-bold text-stone-800 text-sm">OT #{ot.OT_ID}</span>
+                      <span className="font-bold text-stone-800 text-sm">OT #{ot.ot_id}</span>
                       <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
-                        ot.Booking_Status === 'Emergency' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
+                        ot.booking_status === 'Emergency' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
                       }`}>
-                        {ot.Booking_Status}
+                        {ot.booking_status}
                       </span>
                     </div>
                     <div className="text-xs text-stone-500 flex justify-between items-center mt-1">
-                      <span>Patient #{ot.Patient_ID}</span>
+                      <span>Patient #{ot.patient_id}</span>
                       <span className="font-medium bg-white px-2 py-1 rounded border border-stone-200">
-                        {new Date(ot.Scheduled_Start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        {new Date(ot.scheduled_start).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </span>
                     </div>
                   </li>
