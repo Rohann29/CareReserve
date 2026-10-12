@@ -14,29 +14,25 @@ export default async function Dashboard() {
     .from('surgery_booking')
     .select('*')
     .in('booking_status', ['Scheduled', 'Emergency'])
-    .order('scheduled_start', { ascending: true })
-    
+    .order('scheduled_start', { ascending: true });
 
   return (
     <main className="min-h-screen p-4 md:p-6 max-w-[1400px] mx-auto bg-stone-200/50 font-sans text-stone-800">
       <Toaster position="top-right" />
       
-      {/* Bento Grid Wrapper */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* 1. Header Compartment */}
         <header className="lg:col-span-3 bg-teal-900 text-white rounded-[2rem] p-8 md:p-10 shadow-sm flex flex-col justify-center relative overflow-hidden">
           <div className="relative z-10">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-2">CareReserve Dashboard</h1>
             <p className="text-teal-100/80 font-medium text-lg">Live Resource Allocation Engine</p>
           </div>
-          {/* Subtle aesthetic background shape */}
           <div className="absolute -right-10 -top-20 w-80 h-80 bg-teal-800 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
         </header>
 
-        {/* 2. Branches Compartment */}
-        <section className="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden flex flex-col">
-          <div className="px-8 py-6 border-b border-stone-50">
+        {/* Added lg:h-[420px] to lock the height parallel to the OTs box */}
+        <section className="lg:col-span-2 bg-white rounded-[2rem] shadow-sm border border-stone-100 flex flex-col lg:h-[420px] overflow-hidden">
+          <div className="px-8 py-6 border-b border-stone-50 shrink-0">
             <h2 className="font-bold text-stone-800 text-xl">Hospital Branches</h2>
           </div>
           
@@ -45,9 +41,9 @@ export default async function Dashboard() {
               Error: {branchError.message}
             </div>
           ) : (
-            <div className="overflow-x-auto flex-1 p-2">
+            <div className="overflow-auto flex-1 p-2">
               <table className="w-full text-left text-sm text-stone-600">
-                <thead className="text-stone-400 uppercase tracking-wider text-xs">
+                <thead className="text-stone-400 uppercase tracking-wider text-xs sticky top-0 bg-white">
                   <tr>
                     <th className="px-6 py-4 font-medium">Branch ID</th>
                     <th className="px-6 py-4 font-medium">Name</th>
@@ -74,15 +70,16 @@ export default async function Dashboard() {
           )}
         </section>
 
-        {/* 3. Live OTs Compartment */}
-        <section className="lg:col-span-1 bg-white rounded-[2rem] shadow-sm border border-stone-100 overflow-hidden flex flex-col">
-          <div className="px-8 py-6 border-b border-stone-50 bg-gradient-to-br from-stone-50/50 to-white">
+        {/* Added lg:h-[420px] to perfectly match the Branches container height */}
+        <section className="lg:col-span-1 bg-white rounded-[2rem] shadow-sm border border-stone-100 flex flex-col lg:h-[420px] overflow-hidden">
+          <div className="px-8 py-6 border-b border-stone-50 bg-gradient-to-br from-stone-50/50 to-white shrink-0">
             <h2 className="font-bold text-stone-800 text-xl flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.6)]"></span>
               Active OTs
             </h2>
           </div>
           
+          {/* flex-1 and overflow-y-auto trigger the clean scrollbar within the fixed height */}
           <div className="p-6 flex-1 overflow-y-auto bg-stone-50/30">
             {otError ? (
               <div className="text-sm text-rose-600 p-4 bg-rose-50 rounded-2xl border border-rose-100 font-medium">
