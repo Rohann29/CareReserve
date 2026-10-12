@@ -40,65 +40,67 @@ export default function ActionPanels() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-      {/* Booking Form */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="font-semibold text-gray-800">Schedule New Surgery</h2>
+      
+      {/* Schedule Form - Vibrant & Aesthetic Teal */}
+      <section className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+        <div className="px-6 py-5 border-b border-stone-100 bg-gradient-to-r from-teal-50/50 to-white">
+          <h2 className="font-semibold text-teal-800 text-lg">Schedule New Surgery</h2>
         </div>
-        <form ref={bookingFormRef} onSubmit={handleBooking} className="p-6 space-y-4">
+        <form ref={bookingFormRef} onSubmit={handleBooking} className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
-            <input type="number" name="patientId" placeholder="e.g. 1042" className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+            <label className="block text-sm font-medium text-stone-600 mb-1.5">Patient ID</label>
+            <input type="number" name="patientId" placeholder="e.g. 1042" className="w-full border border-stone-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all bg-stone-50/50" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Operating Theater (OT) ID</label>
-            <input type="number" name="otId" placeholder="e.g. 3" className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+            <label className="block text-sm font-medium text-stone-600 mb-1.5">Operating Theater (OT) ID</label>
+            <input type="number" name="otId" placeholder="e.g. 3" className="w-full border border-stone-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all bg-stone-50/50" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled Start</label>
-            <input type="datetime-local" name="scheduledStart" className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" required />
+            <label className="block text-sm font-medium text-stone-600 mb-1.5">Scheduled Start</label>
+            <input type="datetime-local" name="scheduledStart" className="w-full border border-stone-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition-all bg-stone-50/50" required />
           </div>
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors mt-2">
+          <button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm shadow-teal-600/20 transition-all mt-4">
             Book Surgery
           </button>
         </form>
       </section>
 
-      {/* Emergency Override */}
-      <section className="bg-red-50 rounded-xl shadow-sm border border-red-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-red-200 bg-red-100">
-          <h2 className="font-semibold text-red-800 flex items-center gap-2">⚠️ Emergency Override</h2>
+      {/* Emergency Form - Warm & Less Loud Rose */}
+      <section className="bg-[#FFFDFB] rounded-2xl shadow-sm border border-rose-100 overflow-hidden">
+        <div className="px-6 py-5 border-b border-rose-100 bg-rose-50/50">
+          <h2 className="font-semibold text-rose-800 text-lg flex items-center gap-2">⚠️ Emergency Override</h2>
         </div>
         <form ref={emergencyFormRef} onSubmit={handleEmergency} className="p-6 space-y-4">
-          <p className="text-sm text-red-700 mb-4">
+          <p className="text-sm text-rose-600/80 mb-5 leading-relaxed bg-rose-50/80 p-3 rounded-lg border border-rose-100/50">
             Warning: Executing this action will instantly bump an existing elective booking to {"'Rescheduled'"} status to free up the target OT.
           </p>
           
           <div>
-            <label className="block text-sm font-medium text-red-800 mb-1">Target OT ID</label>
-            <input type="number" name="targetOtId" placeholder="e.g. 3" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+            <label className="block text-sm font-medium text-rose-800 mb-1.5">Target OT ID</label>
+            <input type="number" name="targetOtId" placeholder="e.g. 3" className="w-full border border-rose-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 outline-none transition-all" required />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-red-800 mb-1">Old Surgery to Bump (Conflict ID)</label>
-            <input type="number" name="conflictBookingId" placeholder="e.g. 502" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+            <label className="block text-sm font-medium text-rose-800 mb-1.5">Old Surgery to Bump (Conflict ID)</label>
+            <input type="number" name="conflictBookingId" placeholder="e.g. 502" className="w-full border border-rose-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 outline-none transition-all" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-red-800 mb-1">Emergency Patient ID</label>
-            <input type="number" name="patientId" placeholder="e.g. 911" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+            <label className="block text-sm font-medium text-rose-800 mb-1.5">Emergency Patient ID</label>
+            <input type="number" name="patientId" placeholder="e.g. 911" className="w-full border border-rose-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 outline-none transition-all" required />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-red-800 mb-1">Emergency Scheduled Start</label>
-            <input type="datetime-local" name="scheduledStart" className="w-full border border-red-300 rounded-md p-2 text-sm bg-white focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" required />
+            <label className="block text-sm font-medium text-rose-800 mb-1.5">Emergency Scheduled Start</label>
+            <input type="datetime-local" name="scheduledStart" className="w-full border border-rose-200 rounded-xl p-3 text-sm bg-white focus:ring-2 focus:ring-rose-500/20 focus:border-rose-400 outline-none transition-all" required />
           </div>
 
-          <button type="submit" className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors mt-4">
+          <button type="submit" className="w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm shadow-rose-600/20 transition-all mt-6">
             Initiate Override Cascade
           </button>
         </form>
       </section>
+
     </div>
   );
 }
