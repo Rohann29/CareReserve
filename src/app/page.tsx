@@ -8,6 +8,13 @@ export const revalidate = 0;
 type StaffAssignment = { staff_id: number; assigned_role: string };
 type AssetAllocation = { asset_id: number; allocation_start: string };
 
+export type StaffMember = {
+  staff_id:     number;
+  first_name:   string;
+  last_name:    string;
+  medical_role: string;
+};
+
 type Booking = {
   booking_id:               number;
   ot_id:                    number;
@@ -41,7 +48,14 @@ export default async function Dashboard() {
     .select('*')
     .order('branch_id', { ascending: true });
 
-  // Fetch bookings + related junction-table data in a single relational query
+  // Fetch the full staff roster for the role-filtered dropdowns in the form
+  const { data: staffList } = await supabase
+    .from('staff')
+    .select('staff_id, first_name, last_name, medical_role')
+    .order('last_name', { ascending: true });
+
+  // Fetch UPCOMING bookings only (scheduled_start >= now) with junction-table data
+  const now = new Date().toISOString();
   const { data: reservedOts, error: otError } = await supabase
     .from('surgery_booking')
     .select(`
@@ -54,6 +68,7 @@ export default async function Dashboard() {
       booking_asset_allocation ( asset_id, allocation_start )
     `)
     .in('booking_status', ['Scheduled', 'Emergency'])
+    .gte('scheduled_start', now)
     .order('scheduled_start', { ascending: true });
 
   return (
@@ -233,7 +248,7 @@ export default async function Dashboard() {
 
       </div>
 
-      <ActionPanels />
+      <ActionPanels staffList={(staffList ?? []) as StaffMember[]} />
     </main>
   );
 }

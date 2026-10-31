@@ -3,11 +3,14 @@
 import { toast } from 'react-hot-toast';
 import { bookSurgery, triggerEmergency } from '../actions';
 import { useRef, useState, useTransition } from 'react';
+import type { StaffMember } from '../page';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
+// staffId is now the resolved numeric ID string chosen from the dropdown.
 type StaffRow = { id: string; staffId: string; role: string };
 type AssetRow = { id: string; assetId: string };
 
+// These must exactly match the medical_role values in the staff table.
 const ROLE_OPTIONS = [
   'Lead Surgeon',
   'Anesthesiologist',
@@ -15,7 +18,7 @@ const ROLE_OPTIONS = [
   'Surgical Technologist',
   'Perfusionist',
   'Assistant Surgeon',
-];
+] as const;
 
 // ── Utility ────────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2, 8);
@@ -32,6 +35,9 @@ const addBtnCls =
 const removeBtnCls =
   'shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-stone-100 hover:bg-rose-100 text-stone-400 hover:text-rose-600 transition-colors text-base leading-none border border-transparent hover:border-rose-200';
 
+const selectCls =
+  'w-full bg-stone-100 border border-transparent rounded-xl px-3 py-3 text-sm font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-300 transition-all appearance-none cursor-pointer';
+
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 /** Thin horizontal rule with a label — separates form sections cleanly */
@@ -47,43 +53,74 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
-/** Single staff row: Staff ID number input + role dropdown + optional remove */
+/**
+ * Single staff row: role selector (left) + filtered staff member selector (right).
+ * When the role changes, staffId resets to '' so the user must pick a valid member.
+ */
 function StaffRowInput({
   row,
   index,
   canRemove,
+  staffList,
   onUpdate,
   onRemove,
 }: {
   row: StaffRow;
   index: number;
   canRemove: boolean;
+  staffList: StaffMember[];
   onUpdate: (id: string, field: keyof Omit<StaffRow, 'id'>, value: string) => void;
   onRemove: (id: string) => void;
 }) {
+  // Filter the full staff list to only members whose medical_role matches the row's role
+  const filteredStaff = staffList.filter(
+    (s) => s.medical_role === row.role
+  );
+
+  const handleRoleChange = (newRole: string) => {
+    // Reset the selected staff member whenever the role changes
+    onUpdate(row.id, 'role', newRole);
+    onUpdate(row.id, 'staffId', '');
+  };
+
   return (
     <div className="flex gap-2 items-start">
-      <input
-        type="number"
-        name="staffId"
-        placeholder={`Staff ID ${index + 1}`}
-        value={row.staffId}
-        onChange={(e) => onUpdate(row.id, 'staffId', e.target.value)}
-        className="w-28 bg-stone-100 border border-transparent rounded-xl px-3 py-3 text-sm font-medium text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-300 transition-all tabular-nums"
-        min={1}
-        aria-label={`Staff ID ${index + 1}`}
-      />
+      {/* Role selector — left column */}
       <select
         name="staffRole"
         value={row.role}
-        onChange={(e) => onUpdate(row.id, 'role', e.target.value)}
-        className="flex-1 bg-stone-100 border border-transparent rounded-xl px-3 py-3 text-sm font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-300 transition-all appearance-none cursor-pointer"
+        onChange={(e) => handleRoleChange(e.target.value)}
+        className="flex-[1.2] bg-stone-100 border border-transparent rounded-xl px-3 py-3 text-sm font-medium text-stone-800 focus:outline-none focus:ring-2 focus:ring-teal-500/40 focus:border-teal-300 transition-all appearance-none cursor-pointer"
         aria-label={`Role for staff ${index + 1}`}
       >
         {ROLE_OPTIONS.map((r) => (
           <option key={r} value={r}>{r}</option>
         ))}
       </select>
+
+      {/* Staff member selector — filtered by role, right column */}
+      <select
+        name="staffId"
+        value={row.staffId}
+        onChange={(e) => onUpdate(row.id, 'staffId', e.target.value)}
+        className={`flex-[1.4] ${selectCls} ${
+          filteredStaff.length === 0 ? 'text-stone-400 italic' : ''
+        }`}
+        aria-label={`Staff member ${index + 1}`}
+        required
+      >
+        <option value="" disabled>
+          {filteredStaff.length === 0
+            ? `No ${row.role} on record`
+            : `Select ${row.role}…`}
+        </option>
+        {filteredStaff.map((s) => (
+          <option key={s.staff_id} value={String(s.staff_id)}>
+            {s.first_name} {s.last_name} (ID: {s.staff_id})
+          </option>
+        ))}
+      </select>
+
       {canRemove && (
         <button
           type="button"
@@ -139,14 +176,14 @@ function AssetRowInput({
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export default function ActionPanels() {
+export default function ActionPanels({ staffList }: { staffList: StaffMember[] }) {
   const bookingFormRef   = useRef<HTMLFormElement>(null);
   const emergencyFormRef = useRef<HTMLFormElement>(null);
 
   const [isBookingPending, startBookingTransition]     = useTransition();
   const [isEmergencyPending, startEmergencyTransition] = useTransition();
 
-  // Booking form: start with 2 staff rows and 1 asset row
+  // Booking form: start with 2 staff rows (Lead Surgeon + Anesthesiologist) and 1 asset row
   const [staffRows, setStaffRows] = useState<StaffRow[]>([
     { id: uid(), staffId: '', role: 'Lead Surgeon' },
     { id: uid(), staffId: '', role: 'Anesthesiologist' },
@@ -260,9 +297,9 @@ export default function ActionPanels() {
             </div>
 
             {/* Column headers */}
-            <div className="grid grid-cols-[7rem_1fr] gap-2 px-0.5">
-              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Staff ID</span>
+            <div className="grid grid-cols-2 gap-2 px-0.5">
               <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Role</span>
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Staff Member</span>
             </div>
 
             {staffRows.map((row, idx) => (
@@ -271,10 +308,18 @@ export default function ActionPanels() {
                 row={row}
                 index={idx}
                 canRemove={staffRows.length > 1}
+                staffList={staffList}
                 onUpdate={updateStaff}
                 onRemove={removeStaffRow}
               />
             ))}
+
+            {/* Show a warning if the staffList is empty (DB connection issue or no staff seeded) */}
+            {staffList.length === 0 && (
+              <p className="text-[10px] text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 font-medium">
+                No staff records found. Please seed the staff table first.
+              </p>
+            )}
           </div>
 
           {/* ── Surgical Asset Section ────────────────────────────────────── */}
@@ -333,7 +378,7 @@ export default function ActionPanels() {
           {/* Info callout */}
           <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4">
             <p className="text-xs font-medium text-rose-700 leading-relaxed">
-              This action sets the conflict booking to <strong>Rescheduled</strong> and
+              This action sets the conflict booking to <strong>Rescheduled (Emergency)</strong> and
               inserts a new <strong>Emergency</strong> booking in its place. This cannot be undone from this panel.
             </p>
           </div>

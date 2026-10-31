@@ -19,8 +19,8 @@ function getAll(formData: FormData, name: string): string[] {
 //
 export async function bookSurgery(formData: FormData) {
   // ── Parse core fields ────────────────────────────────────────────────────────
-  const patientId      = Number(formData.get('patientId'));
-  const otId           = Number(formData.get('otId'));
+  const patientId = Number(formData.get('patientId'));
+  const otId = Number(formData.get('otId'));
   const scheduledStart = String(formData.get('scheduledStart'));
 
   if (!patientId || !otId || !scheduledStart) {
@@ -28,28 +28,35 @@ export async function bookSurgery(formData: FormData) {
   }
 
   // ── Parse staff arrays ───────────────────────────────────────────────────────
-  const rawStaffIds   = getAll(formData, 'staffId');
+  const rawStaffIds = getAll(formData, 'staffId');
   const rawStaffRoles = getAll(formData, 'staffRole');
-  const staffIds      = rawStaffIds.map(Number).filter((n) => !isNaN(n) && n > 0);
-  const staffRoles    = rawStaffRoles.slice(0, staffIds.length);
+  const staffIds = rawStaffIds.map(Number).filter((n) => !isNaN(n) && n > 0);
+  const staffRoles = rawStaffRoles.slice(0, staffIds.length);
 
   // ── Parse asset arrays ───────────────────────────────────────────────────────
   const rawAssetIds = getAll(formData, 'assetId');
-  const assetIds    = rawAssetIds.map(Number).filter((n) => !isNaN(n) && n > 0);
+  const assetIds = rawAssetIds.map(Number).filter((n) => !isNaN(n) && n > 0);
 
   // ── Step 1: Insert the primary booking record ──────────────────────────────
   const { data: booking, error: bookingError } = await supabase
     .from('surgery_booking')
     .insert({
-      patient_id:       patientId,
-      ot_id:            otId,
-      scheduled_start:  new Date(scheduledStart).toISOString(),
-      booking_status:   'Scheduled',
+      patient_id: patientId,
+      ot_id: otId,
+      scheduled_start: new Date(scheduledStart).toISOString(),
+      booking_status: 'Scheduled',
     })
     .select('booking_id')
     .single();
 
   if (bookingError || !booking) {
+    // Postgres error code 23505 = unique_violation (e.g. duplicate ot_id + scheduled_start)
+    if (bookingError?.code === '23505') {
+      return {
+        success: false,
+        error: 'This Operating Theater is already booked at this specific time. Please choose a different time slot.',
+      };
+    }
     return {
       success: false,
       error: bookingError?.message ?? 'Failed to create surgery booking.',
@@ -61,8 +68,8 @@ export async function bookSurgery(formData: FormData) {
   // ── Step 2: Insert staff assignments ──────────────────────────────────────
   if (staffIds.length > 0) {
     const staffRows = staffIds.map((staffId, i) => ({
-      booking_id:    bookingId,
-      staff_id:      staffId,
+      booking_id: bookingId,
+      staff_id: staffId,
       assigned_role: staffRoles[i] ?? 'Unspecified',
     }));
 
@@ -85,8 +92,8 @@ export async function bookSurgery(formData: FormData) {
     const allocationStart = new Date(scheduledStart).toISOString();
 
     const assetRows = assetIds.map((assetId) => ({
-      booking_id:       bookingId,
-      asset_id:         assetId,
+      booking_id: bookingId,
+      asset_id: assetId,
       allocation_start: allocationStart,
     }));
 
@@ -115,28 +122,29 @@ export async function bookSurgery(formData: FormData) {
 //   Step 4 → INSERT asset allocations
 //
 export async function triggerEmergency(formData: FormData) {
-  const targetOtId        = Number(formData.get('targetOtId'));
+  const targetOtId = Number(formData.get('targetOtId'));
   const conflictBookingId = Number(formData.get('conflictBookingId'));
-  const patientId         = Number(formData.get('patientId'));
-  const scheduledStart    = String(formData.get('scheduledStart'));
+  const patientId = Number(formData.get('patientId'));
+  const scheduledStart = String(formData.get('scheduledStart'));
 
   if (!targetOtId || !conflictBookingId || !patientId || !scheduledStart) {
     return { success: false, error: 'All emergency fields are required.' };
   }
 
   // ── Parse optional staff/asset overrides ────────────────────────────────────
-  const rawStaffIds   = getAll(formData, 'staffId');
+  const rawStaffIds = getAll(formData, 'staffId');
   const rawStaffRoles = getAll(formData, 'staffRole');
-  const staffIds      = rawStaffIds.map(Number).filter((n) => !isNaN(n) && n > 0);
-  const staffRoles    = rawStaffRoles.slice(0, staffIds.length);
+  const staffIds = rawStaffIds.map(Number).filter((n) => !isNaN(n) && n > 0);
+  const staffRoles = rawStaffRoles.slice(0, staffIds.length);
 
   const rawAssetIds = getAll(formData, 'assetId');
-  const assetIds    = rawAssetIds.map(Number).filter((n) => !isNaN(n) && n > 0);
+  const assetIds = rawAssetIds.map(Number).filter((n) => !isNaN(n) && n > 0);
 
-  // ── Step 1: Bump the conflicting booking to 'Rescheduled' ─────────────────
+  // ── Step 1: Bump the conflicting booking to 'Rescheduled (Emergency)' ────────
+  // Using the explicit status so hospital records show WHY the patient was bumped.
   const { error: rescheduleError } = await supabase
     .from('surgery_booking')
-    .update({ booking_status: 'Rescheduled' })
+    .update({ booking_status: 'Rescheduled (Emergency)' })
     .eq('booking_id', conflictBookingId);
 
   if (rescheduleError) {
@@ -150,10 +158,10 @@ export async function triggerEmergency(formData: FormData) {
   const { data: emergencyBooking, error: bookingError } = await supabase
     .from('surgery_booking')
     .insert({
-      patient_id:      patientId,
-      ot_id:           targetOtId,
+      patient_id: patientId,
+      ot_id: targetOtId,
       scheduled_start: new Date(scheduledStart).toISOString(),
-      booking_status:  'Emergency',
+      booking_status: 'Emergency',
     })
     .select('booking_id')
     .single();
@@ -170,8 +178,8 @@ export async function triggerEmergency(formData: FormData) {
   // ── Step 3: Insert staff assignments (if provided) ────────────────────────
   if (staffIds.length > 0) {
     const staffRows = staffIds.map((staffId, i) => ({
-      booking_id:    emergencyBookingId,
-      staff_id:      staffId,
+      booking_id: emergencyBookingId,
+      staff_id: staffId,
       assigned_role: staffRoles[i] ?? 'Emergency Responder',
     }));
 
@@ -192,8 +200,8 @@ export async function triggerEmergency(formData: FormData) {
     const allocationStart = new Date(scheduledStart).toISOString();
 
     const assetRows = assetIds.map((assetId) => ({
-      booking_id:       emergencyBookingId,
-      asset_id:         assetId,
+      booking_id: emergencyBookingId,
+      asset_id: assetId,
       allocation_start: allocationStart,
     }));
 
